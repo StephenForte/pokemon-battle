@@ -55,13 +55,15 @@ function HPBar({ hp, maxHp = 100 }) {
   );
 }
 
-function PokemonCard({ pokemon, selectedMove, onMoveSelect, disabled, moveDetails, hp, isWinner, isLoser, animateAttack, animateShake }) {
+function PokemonCard({ pokemon, moves, selectedMove, onMoveSelect, disabled, moveDetails, hp, isWinner, isLoser, animateAttack, animateShake }) {
   if (!pokemon) return null;
-  // Get up to 4 moves (randomly if more than 4)
-  let moves = pokemon.moves.slice(0, 4);
-  if (pokemon.moves.length > 4) {
-    const shuffled = [...pokemon.moves].sort(() => 0.5 - Math.random());
-    moves = shuffled.slice(0, 4);
+  // Use fixed moves if provided
+  if (!moves) {
+    moves = pokemon.moves.slice(0, 4);
+    if (pokemon.moves.length > 4) {
+      const shuffled = [...pokemon.moves].sort(() => 0.5 - Math.random());
+      moves = shuffled.slice(0, 4);
+    }
   }
   return (
     <div
@@ -208,6 +210,8 @@ export default function App() {
   const [moveSelections2, setMoveSelections2] = useState([]); // array of 3 indices
   const [currentRound, setCurrentRound] = useState(0); // 0, 1, 2
   const [roundResults, setRoundResults] = useState([]); // store results for each round
+  const [pokemon1Moves, setPokemon1Moves] = useState([]);
+  const [pokemon2Moves, setPokemon2Moves] = useState([]);
 
   const fetchPokemon = async () => {
     setLoading(true);
@@ -244,6 +248,8 @@ export default function App() {
       const shuffled = [...poke2.moves].sort(() => 0.5 - Math.random());
       moves2 = shuffled.slice(0, 4);
     }
+    setPokemon1Moves(moves1);
+    setPokemon2Moves(moves2);
     // Fetch move details
     const [details1, details2] = await Promise.all([
       fetchMoveDetails(moves1),
@@ -369,6 +375,7 @@ export default function App() {
       <div style={{ display: 'flex', justifyContent: 'center', gap: '2rem' }}>
         <PokemonCard
           pokemon={pokemon1}
+          moves={pokemon1Moves}
           selectedMove={moveSelections1[currentRound]}
           onMoveSelect={(idx) => handleMoveSelect(1, idx)}
           disabled={animating}
@@ -382,6 +389,7 @@ export default function App() {
         <div style={{ alignSelf: 'center', fontSize: '2rem' }}>VS</div>
         <PokemonCard
           pokemon={pokemon2}
+          moves={pokemon2Moves}
           selectedMove={moveSelections2[currentRound]}
           onMoveSelect={(idx) => handleMoveSelect(2, idx)}
           disabled={animating}
